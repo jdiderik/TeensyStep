@@ -1,6 +1,13 @@
-# Windows image file caches 
+# Windows image file caches
 Thumbs.db
 ehthumbs.db
+
+# Ignore docs files
+_gh_pages
+_site*
+_drafts
+.vscode*
+.ruby-version
 
 # Folder config file
 Desktop.ini
@@ -45,3 +52,7 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+
+.pio
+.vscode

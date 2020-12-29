@@ -1,3 +1,13 @@
+﻿#if defined(__IMXRT1052__)
+#pragma once
+
+#include <arduino.h>
+#include <core_pins.h>
+
+namespace TeensyStepFTM
+{
+
+
 //========================================================================== 
 // Available timer modules for the Teensy XX boards. Please note that those 
 // timers are also used by the core libraries for PWM and AnalogWrite. 
@@ -22,20 +32,11 @@
 #define USE_TIMER TIMER_DEFAULT
 
 
-#define USE_CLASS_CALLBACK 
- 
-
 //==========================================================================
 // Nothing to be changed below here 
 //==========================================================================
 
-#pragma once
 
-#include <kinetis.h>
-#include <core_pins.h>
-
-namespace TeensyDelay
-{
 
 #if USE_TIMER == TIMER_DEFAULT
 #undef USE_TIMER
@@ -111,7 +112,7 @@ namespace TeensyDelay
     // Definition of base address for register block, number of channels and IRQ number
     //
 
-    constexpr uint32_t TimerBaseAddr[][7] =
+    constexpr uintptr_t TimerBaseAddr[][7] =
     { //    FTM0         FTM1        FTM2        FTM3        TPM0        TMP1        TMP2
         { 0,          0,          0,          0,          0,          0,          0          },  // Teensy LC not yet supported
         { 0x40038000, 0x40039000, 0,          0,          0,          0,          0,         },  // Teensy 3.0
@@ -141,15 +142,12 @@ namespace TeensyDelay
         2,  // TPM2 
     };
 
-    constexpr uint32_t timerAddr = TimerBaseAddr[(int)board][selTimer];
+    constexpr uintptr_t timerAddr = TimerBaseAddr[(int)board][selTimer];
     constexpr volatile FTM_t* timer = __builtin_constant_p((FTM_t*)timerAddr) ? (FTM_t*)timerAddr : (FTM_t*)timerAddr; // base address for register block of selected timer
-    
-    //constexpr volatile FTM_t* timer = (FTM_t*)TimerBaseAddr[(int)board][selTimer]; // base address for register block of selected timer
     constexpr unsigned irq = IRQ_Number[(int)board][selTimer];                     // IRQ number of selected timer
     constexpr unsigned maxChannel = _nrOfChannels[selTimer];                        // Number of channels for selected timer
 
     static_assert(timer != nullptr && irq != 0, "Board does not support choosen timer");  //Generate compiler error in case the board does not support the selected timer
-
 
     //-----------------------------------------------------------------------------------
     //Frequency dependent settings 
@@ -157,9 +155,10 @@ namespace TeensyDelay
     constexpr unsigned _timer_frequency = isFTM ? F_BUS : 16000000;  // FTM timers are clocked with F_BUS, the TPM timers are clocked with OSCERCLK (16MHz for all teensies)
 
     // Choose prescaler such that one timer cycle corresponds to about 1µs
-    constexpr unsigned prescale = _timer_frequency > 120000000 ? 0b111 :
+    constexpr unsigned prescale = 
+        _timer_frequency > 120000000 ? 0b111 :
         _timer_frequency > 60000000 ? 0b110 :
-        _timer_frequency > 30000000 ? 0b101 :
+        _timer_frequency > 30000000 ? 0b101 : 
         _timer_frequency > 15000000 ? 0b100 :
         _timer_frequency > 8000000 ? 0b011 :
         _timer_frequency > 4000000 ? 0b010 :
@@ -172,3 +171,4 @@ namespace TeensyDelay
         return  mu * 1E-6 * _timer_frequency / (1 << prescale) + 0.5;
     }
 }
+#endif
